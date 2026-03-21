@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,10 @@ import {
   Pressable,
   StyleSheet,
   Dimensions,
+  Animated,
+  PanResponder,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  runOnJS,
-} from 'react-native-reanimated';
 import * as Sharing from 'expo-sharing';
 import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 import { PhotoGrid } from '@/components/memories/PhotoGrid';
@@ -140,57 +135,52 @@ function PhotoViewer({
   onClose: () => void;
   onShare: () => void;
 }) {
-  const translateY = useSharedValue(0);
-  const opacity = useSharedValue(1);
+  const translateY = useRef(new Animated.Value(0)).current;
+  const bgOpacity = useRef(new Animated.Value(1)).current;
 
-  const dismissGesture = Gesture.Pan()
-    .onUpdate((e: { translationY: number }) => {
-      if (e.translationY > 0) {
-        translateY.value = e.translationY;
-        opacity.value = 1 - e.translationY / 400;
-      }
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 10,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) {
+          translateY.setValue(g.dy);
+          bgOpacity.setValue(1 - g.dy / 400);
+        }
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 150) {
+          onClose();
+        } else {
+          Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+          Animated.spring(bgOpacity, { toValue: 1, useNativeDriver: true }).start();
+        }
+      },
     })
-    .onEnd((e: { translationY: number }) => {
-      if (e.translationY > 150) {
-        runOnJS(onClose)();
-      } else {
-        translateY.value = withSpring(0);
-        opacity.value = withSpring(1);
-      }
-    });
-
-  const imageStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  const bgStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
+  ).current;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Animated.View style={[styles.viewer, bgStyle]}>
-        <Pressable style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeText}>{'\u2715'}</Text>
-        </Pressable>
+    <Animated.View style={[styles.viewer, { opacity: bgOpacity }]}>
+      <Pressable style={styles.closeButton} onPress={onClose}>
+        <Text style={styles.closeText}>{'\u2715'}</Text>
+      </Pressable>
 
-        <GestureDetector gesture={dismissGesture}>
-          <Animated.View style={imageStyle}>
-            {uri && (
-              <Image
-                source={{ uri }}
-                style={styles.viewerImage}
-                resizeMode="contain"
-              />
-            )}
-          </Animated.View>
-        </GestureDetector>
-
-        <Pressable style={styles.shareButton} onPress={onShare}>
-          <Text style={styles.shareText}>SHARE</Text>
-        </Pressable>
+      <Animated.View
+        style={{ transform: [{ translateY }] }}
+        {...panResponder.panHandlers}
+      >
+        {uri && (
+          <Image
+            source={{ uri }}
+            style={styles.viewerImage}
+            resizeMode="contain"
+          />
+        )}
       </Animated.View>
-    </GestureHandlerRootView>
+
+      <Pressable style={styles.shareButton} onPress={onShare}>
+        <Text style={styles.shareText}>SHARE</Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 

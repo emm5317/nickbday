@@ -1,33 +1,22 @@
-import { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 import { useCountdown } from '@/hooks/useCountdown';
 
 export function CountdownTimer() {
   const { days, hours, minutes, isOver, isWeekendOver } = useCountdown();
-  const scale = useSharedValue(1);
+  const scale = useRef(new Animated.Value(1)).current;
 
-  // Pulse when minutes change
   useEffect(() => {
-    scale.value = withSequence(
-      withTiming(1.05, { duration: 150 }),
-      withTiming(1.0, { duration: 150 })
-    );
+    Animated.sequence([
+      Animated.timing(scale, { toValue: 1.05, duration: 150, useNativeDriver: true }),
+      Animated.timing(scale, { toValue: 1.0, duration: 150, useNativeDriver: true }),
+    ]).start();
   }, [minutes, scale]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
 
   if (isWeekendOver) {
     return (
-      <Animated.View style={[styles.pill, animatedStyle]}>
+      <Animated.View style={[styles.pill, { transform: [{ scale }] }]}>
         <Text style={styles.text}>WEEKEND OVER — MEMORIES MADE</Text>
       </Animated.View>
     );
@@ -35,14 +24,14 @@ export function CountdownTimer() {
 
   if (isOver) {
     return (
-      <Animated.View style={[styles.pill, animatedStyle]}>
+      <Animated.View style={[styles.pill, { transform: [{ scale }] }]}>
         <Text style={styles.text}>THE WEEKEND IS HERE</Text>
       </Animated.View>
     );
   }
 
   return (
-    <Animated.View style={[styles.pill, animatedStyle]}>
+    <Animated.View style={[styles.pill, { transform: [{ scale }] }]}>
       <View style={styles.dot} />
       <Text style={styles.text}>
         {days} DAYS · {hours} HRS · {minutes} MIN

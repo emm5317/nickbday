@@ -1,8 +1,6 @@
-import { useState, useCallback } from 'react';
-import { View, ScrollView, Text, StyleSheet } from 'react-native';
+import { useState, useCallback, useRef } from 'react';
+import { View, ScrollView, Text, StyleSheet, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { DayTabs } from '@/components/schedule/DayTabs';
 import { EventCard } from '@/components/schedule/EventCard';
@@ -28,6 +26,7 @@ function getDefaultDay(): Day {
 export default function ScheduleScreen() {
   const [activeDay, setActiveDay] = useState<Day>(getDefaultDay);
   const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
+  const touchStartX = useRef(0);
 
   const dayEvents = SCHEDULE.filter((e) => e.day === activeDay);
 
@@ -40,15 +39,7 @@ export default function ScheduleScreen() {
     }
   }, [activeDay]);
 
-  const swipeGesture = Gesture.Pan()
-    .activeOffsetX([-50, 50])
-    .onEnd((e: { translationX: number }) => {
-      if (e.translationX < -50) runOnJS(swipeDays)('left');
-      else if (e.translationX > 50) runOnJS(swipeDays)('right');
-    });
-
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Weekend</Text>
@@ -57,10 +48,17 @@ export default function ScheduleScreen() {
 
       <DayTabs activeDay={activeDay} onDayChange={setActiveDay} />
 
-      <GestureDetector gesture={swipeGesture}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onTouchStart={(e) => {
+          touchStartX.current = e.nativeEvent.pageX;
+        }}
+        onTouchEnd={(e) => {
+          const dx = e.nativeEvent.pageX - touchStartX.current;
+          if (dx < -60) swipeDays('left');
+          else if (dx > 60) swipeDays('right');
+        }}
       >
         {dayEvents.map((event, index) => (
           <View key={event.id} style={styles.eventRow}>
@@ -80,7 +78,6 @@ export default function ScheduleScreen() {
           </View>
         ))}
       </ScrollView>
-      </GestureDetector>
 
       <BottomSheet
         visible={selectedEvent !== null}
@@ -98,7 +95,6 @@ export default function ScheduleScreen() {
         )}
       </BottomSheet>
     </SafeAreaView>
-    </GestureHandlerRootView>
   );
 }
 
@@ -148,7 +144,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: Spacing.md,
   },
-  // Bottom sheet
   sheetContent: {
     gap: Spacing.sm,
   },

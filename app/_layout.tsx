@@ -11,14 +11,8 @@ import {
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  runOnJS,
-} from 'react-native-reanimated';
+import { useEffect, useRef, useState } from 'react';
+import { View, Image, StyleSheet, Animated } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { useEasterEggWatcher } from '@/hooks/useEasterEggWatcher';
 import { useLocationSharing } from '@/hooks/useLocationSharing';
@@ -42,9 +36,9 @@ export default function RootLayout() {
     DMSans_600SemiBold,
   });
   const [showSplash, setShowSplash] = useState(true);
-  const logoOpacity = useSharedValue(0);
-  const logoScale = useSharedValue(0.8);
-  const splashOpacity = useSharedValue(1);
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.8)).current;
+  const splashOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (error) throw error;
@@ -54,25 +48,20 @@ export default function RootLayout() {
     if (loaded) {
       SplashScreen.hideAsync();
       // Animate logo in
-      logoOpacity.value = withTiming(1, { duration: 800 });
-      logoScale.value = withTiming(1, { duration: 800 });
+      Animated.parallel([
+        Animated.timing(logoOpacity, { toValue: 1, duration: 800, useNativeDriver: true }),
+        Animated.timing(logoScale, { toValue: 1, duration: 800, useNativeDriver: true }),
+      ]).start();
       // After showing logo, fade out splash
       setTimeout(() => {
-        splashOpacity.value = withTiming(0, { duration: 400 }, () => {
-          runOnJS(setShowSplash)(false);
-        });
+        Animated.timing(splashOpacity, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }).start(() => setShowSplash(false));
       }, 1200);
     }
   }, [loaded, logoOpacity, logoScale, splashOpacity]);
-
-  const logoStyle = useAnimatedStyle(() => ({
-    opacity: logoOpacity.value,
-    transform: [{ scale: logoScale.value }],
-  }));
-
-  const splashStyle = useAnimatedStyle(() => ({
-    opacity: splashOpacity.value,
-  }));
 
   if (!loaded) {
     return null;
@@ -82,13 +71,14 @@ export default function RootLayout() {
     <View style={{ flex: 1 }}>
       <RootLayoutNav />
       {showSplash && (
-        <Animated.View style={[styles.splash, splashStyle]}>
-          <Animated.View style={logoStyle}>
-            <Image
-              source={require('@/assets/images/icon.png')}
-              style={styles.splashLogo}
-            />
-          </Animated.View>
+        <Animated.View style={[styles.splash, { opacity: splashOpacity }]}>
+          <Animated.Image
+            source={require('@/assets/images/icon.png')}
+            style={[
+              styles.splashLogo,
+              { opacity: logoOpacity, transform: [{ scale: logoScale }] },
+            ]}
+          />
         </Animated.View>
       )}
     </View>
