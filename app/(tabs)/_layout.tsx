@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { Colors, Fonts } from '@/constants/theme';
 
 function SuitIcon({ suit, color }: { suit: string; color: string }) {
@@ -10,10 +10,13 @@ function SuitIcon({ suit, color }: { suit: string; color: string }) {
   );
 }
 
-function HomeIcon({ color }: { color: string }) {
+function HomeIcon() {
   return (
-    <View style={[styles.homeCircle, { borderColor: color }]}>
-      <Text style={[styles.homeIcon, { color }]}>{'\u2660'}</Text>
+    <View style={styles.homeCircle}>
+      <Image
+        source={require('@/assets/images/sphere.png')}
+        style={styles.homeImage}
+      />
     </View>
   );
 }
@@ -58,7 +61,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '',
-          tabBarIcon: ({ color }) => <HomeIcon color={color} />,
+          tabBarIcon: () => <HomeIcon />,
         }}
       />
       <Tabs.Screen
@@ -81,17 +84,15 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   homeCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 2.5,
-    backgroundColor: Colors.bgCard,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: -14,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    overflow: 'hidden',
+    marginTop: -18,
   },
-  homeIcon: {
-    fontFamily: Fonts.body,
-    fontSize: 22,
+  homeImage: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
   },
 });
