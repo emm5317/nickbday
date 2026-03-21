@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 import { PLAYERS } from '@/constants/players';
 import { useAppStore } from '@/store/useAppStore';
+import { registerPlayer } from '@/lib/firebaseSync';
 
 export default function PlayerSelectScreen() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function PlayerSelectScreen() {
 
   const handleSelect = (name: string) => {
     setCurrentPlayer(name);
+    registerPlayer(name);
     router.back();
   };
 

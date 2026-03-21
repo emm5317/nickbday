@@ -16,6 +16,7 @@ import { PhotoCapture } from '@/components/memories/PhotoCapture';
 import { WatermarkOverlay } from '@/components/memories/WatermarkOverlay';
 import { usePhotoWatermark } from '@/hooks/usePhotoWatermark';
 import { useAppStore } from '@/store/useAppStore';
+import { uploadPhoto } from '@/lib/firebaseSync';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -29,13 +30,20 @@ export default function MemoriesScreen() {
 
   const { watermarkRef, applyWatermark } = usePhotoWatermark();
 
+  const currentPlayer = useAppStore((s) => s.currentPlayer);
+
   const handlePhotoTaken = async (uri: string) => {
     setPendingPhoto(uri);
 
     // Small delay for watermark overlay to render
     setTimeout(async () => {
       const watermarkedUri = await applyWatermark(uri);
+      // Show locally immediately
       addMemoryPhoto(watermarkedUri);
+      // Upload to Firebase for all devices
+      if (currentPlayer) {
+        uploadPhoto(watermarkedUri, currentPlayer);
+      }
       setPendingPhoto(null);
     }, 100);
   };

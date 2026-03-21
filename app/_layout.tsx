@@ -14,6 +14,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Colors } from '@/constants/theme';
 import { useEasterEggWatcher } from '@/hooks/useEasterEggWatcher';
+import { subscribeToState } from '@/lib/firebaseSync';
+import { useAppStore } from '@/store/useAppStore';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -51,6 +53,12 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   useEasterEggWatcher();
+  const syncFromFirebase = useAppStore((s) => s.syncFromFirebase);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToState(syncFromFirebase);
+    return unsubscribe;
+  }, [syncFromFirebase]);
 
   return (
     <>
