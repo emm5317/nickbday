@@ -9,6 +9,13 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  runOnJS,
+} from 'react-native-reanimated';
 import * as Sharing from 'expo-sharing';
 import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 import { PhotoGrid } from '@/components/memories/PhotoGrid';
@@ -107,35 +114,83 @@ export default function MemoriesScreen() {
         <WatermarkOverlay ref={watermarkRef} photoUri={pendingPhoto} />
       )}
 
-      {/* Full-Screen Photo Viewer */}
+      {/* Full-Screen Photo Viewer with swipe-to-dismiss */}
       <Modal
         visible={viewerUri !== null}
         transparent
         animationType="fade"
         onRequestClose={() => setViewerUri(null)}
       >
-        <View style={styles.viewer}>
-          <Pressable
-            style={styles.closeButton}
-            onPress={() => setViewerUri(null)}
-          >
-            <Text style={styles.closeText}>{'\u2715'}</Text>
-          </Pressable>
-
-          {viewerUri && (
-            <Image
-              source={{ uri: viewerUri }}
-              style={styles.viewerImage}
-              resizeMode="contain"
-            />
-          )}
-
-          <Pressable style={styles.shareButton} onPress={handleShare}>
-            <Text style={styles.shareText}>SHARE</Text>
-          </Pressable>
-        </View>
+        <PhotoViewer
+          uri={viewerUri}
+          onClose={() => setViewerUri(null)}
+          onShare={handleShare}
+        />
       </Modal>
     </SafeAreaView>
+  );
+}
+
+function PhotoViewer({
+  uri,
+  onClose,
+  onShare,
+}: {
+  uri: string | null;
+  onClose: () => void;
+  onShare: () => void;
+}) {
+  const translateY = useSharedValue(0);
+  const opacity = useSharedValue(1);
+
+  const dismissGesture = Gesture.Pan()
+    .onUpdate((e: { translationY: number }) => {
+      if (e.translationY > 0) {
+        translateY.value = e.translationY;
+        opacity.value = 1 - e.translationY / 400;
+      }
+    })
+    .onEnd((e: { translationY: number }) => {
+      if (e.translationY > 150) {
+        runOnJS(onClose)();
+      } else {
+        translateY.value = withSpring(0);
+        opacity.value = withSpring(1);
+      }
+    });
+
+  const imageStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  const bgStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Animated.View style={[styles.viewer, bgStyle]}>
+        <Pressable style={styles.closeButton} onPress={onClose}>
+          <Text style={styles.closeText}>{'\u2715'}</Text>
+        </Pressable>
+
+        <GestureDetector gesture={dismissGesture}>
+          <Animated.View style={imageStyle}>
+            {uri && (
+              <Image
+                source={{ uri }}
+                style={styles.viewerImage}
+                resizeMode="contain"
+              />
+            )}
+          </Animated.View>
+        </GestureDetector>
+
+        <Pressable style={styles.shareButton} onPress={onShare}>
+          <Text style={styles.shareText}>SHARE</Text>
+        </Pressable>
+      </Animated.View>
+    </GestureHandlerRootView>
   );
 }
 

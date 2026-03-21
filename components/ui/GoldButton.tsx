@@ -1,4 +1,5 @@
 import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 
 interface GoldButtonProps {
@@ -18,7 +19,10 @@ export function GoldButton({ label, onPress, style, textStyle, disabled }: GoldB
         disabled && styles.disabled,
         style,
       ]}
-      onPress={onPress}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
       disabled={disabled}
     >
       <Text style={[styles.label, textStyle]}>{label}</Text>

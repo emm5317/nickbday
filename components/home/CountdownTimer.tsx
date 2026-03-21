@@ -1,33 +1,53 @@
+import { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 import { useCountdown } from '@/hooks/useCountdown';
 
 export function CountdownTimer() {
   const { days, hours, minutes, isOver, isWeekendOver } = useCountdown();
+  const scale = useSharedValue(1);
+
+  // Pulse when minutes change
+  useEffect(() => {
+    scale.value = withSequence(
+      withTiming(1.05, { duration: 150 }),
+      withTiming(1.0, { duration: 150 })
+    );
+  }, [minutes, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   if (isWeekendOver) {
     return (
-      <View style={styles.pill}>
+      <Animated.View style={[styles.pill, animatedStyle]}>
         <Text style={styles.text}>WEEKEND OVER — MEMORIES MADE</Text>
-      </View>
+      </Animated.View>
     );
   }
 
   if (isOver) {
     return (
-      <View style={styles.pill}>
+      <Animated.View style={[styles.pill, animatedStyle]}>
         <Text style={styles.text}>THE WEEKEND IS HERE</Text>
-      </View>
+      </Animated.View>
     );
   }
 
   return (
-    <View style={styles.pill}>
+    <Animated.View style={[styles.pill, animatedStyle]}>
       <View style={styles.dot} />
       <Text style={styles.text}>
         {days} DAYS · {hours} HRS · {minutes} MIN
       </Text>
-    </View>
+    </Animated.View>
   );
 }
 

@@ -6,25 +6,23 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { GoldButton } from '@/components/ui/GoldButton';
 import { Badge } from '@/components/ui/Badge';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Text } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import type { Challenge } from '@/data/challenges';
 
-// All 12 possible bingo lines (indices into the 5x5 grid)
 const BINGO_LINES = [
-  // Rows
   [0, 1, 2, 3, 4],
   [5, 6, 7, 8, 9],
   [10, 11, 12, 13, 14],
   [15, 16, 17, 18, 19],
   [20, 21, 22, 23, 24],
-  // Columns
   [0, 5, 10, 15, 20],
   [1, 6, 11, 16, 21],
   [2, 7, 12, 17, 22],
   [3, 8, 13, 18, 23],
   [4, 9, 14, 19, 24],
-  // Diagonals
   [0, 6, 12, 18, 24],
   [4, 8, 12, 16, 20],
 ];
@@ -49,12 +47,28 @@ export function BingoGrid() {
   const completedChallenges = useAppStore((s) => s.completedChallenges);
   const completeChallenge = useAppStore((s) => s.completeChallenge);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const prevBingoCount = useRef(0);
 
   const bingoLines = getCompletedBingoLines(completedChallenges);
   const bingoCells = getCellsInBingoLines(bingoLines);
 
+  // Detect new bingo line
+  useEffect(() => {
+    if (bingoLines.length > prevBingoCount.current && prevBingoCount.current >= 0) {
+      if (prevBingoCount.current > 0) {
+        // Only fire confetti after the initial load
+        setShowConfetti(true);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setTimeout(() => setShowConfetti(false), 3000);
+      }
+    }
+    prevBingoCount.current = bingoLines.length;
+  }, [bingoLines.length]);
+
   const handleComplete = () => {
     if (selectedChallenge) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       completeChallenge(selectedChallenge.id);
       setSelectedChallenge(null);
     }
@@ -113,6 +127,16 @@ export function BingoGrid() {
           </View>
         )}
       </BottomSheet>
+
+      {showConfetti && (
+        <ConfettiCannon
+          count={80}
+          origin={{ x: 200, y: -20 }}
+          autoStart
+          fadeOut
+          colors={['#C9A84C', '#E2C97E', '#E8853A', '#00D4C8']}
+        />
+      )}
     </>
   );
 }

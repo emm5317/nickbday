@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 import { Card } from '@/components/ui/Card';
 import { useAppStore } from '@/store/useAppStore';
@@ -21,6 +23,7 @@ export default function TriviaGameScreen() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [phase, setPhase] = useState<Phase>('answering');
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const question = TRIVIA_QUESTIONS[currentIndex];
   const totalQuestions = TRIVIA_QUESTIONS.length;
@@ -33,7 +36,11 @@ export default function TriviaGameScreen() {
       if (currentPlayer) {
         recordTriviaScore(currentPlayer, finalScore);
       }
-      router.replace('/(tabs)/trivia/leaderboard' as any);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setShowConfetti(true);
+      setTimeout(() => {
+        router.replace('/(tabs)/trivia/leaderboard' as any);
+      }, 1500);
       return;
     }
 
@@ -54,6 +61,9 @@ export default function TriviaGameScreen() {
     setSelectedAnswer(answerIndex);
     if (answerIndex === question.correctIndex) {
       setScore((s) => s + 1);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
     setPhase('revealing');
   };
@@ -138,6 +148,16 @@ export default function TriviaGameScreen() {
         <Pressable style={styles.skipButton} onPress={handleSkip}>
           <Text style={styles.skipText}>Skip</Text>
         </Pressable>
+      )}
+
+      {showConfetti && (
+        <ConfettiCannon
+          count={100}
+          origin={{ x: 200, y: -20 }}
+          autoStart
+          fadeOut
+          colors={['#C9A84C', '#E2C97E', '#E8853A', '#00D4C8']}
+        />
       )}
     </SafeAreaView>
   );

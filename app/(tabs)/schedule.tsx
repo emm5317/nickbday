@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { DayTabs } from '@/components/schedule/DayTabs';
 import { EventCard } from '@/components/schedule/EventCard';
 import { TimelineConnector } from '@/components/schedule/TimelineConnector';
 import { BottomSheet } from '@/components/ui/BottomSheet';
-import { SCHEDULE, type Day, type ScheduleEvent } from '@/data/schedule';
+import { SCHEDULE, DAYS, type Day, type ScheduleEvent } from '@/data/schedule';
 
 function getDefaultDay(): Day {
   const now = new Date();
@@ -29,7 +31,24 @@ export default function ScheduleScreen() {
 
   const dayEvents = SCHEDULE.filter((e) => e.day === activeDay);
 
+  const swipeDays = useCallback((direction: 'left' | 'right') => {
+    const currentIdx = DAYS.indexOf(activeDay);
+    if (direction === 'left' && currentIdx < DAYS.length - 1) {
+      setActiveDay(DAYS[currentIdx + 1]);
+    } else if (direction === 'right' && currentIdx > 0) {
+      setActiveDay(DAYS[currentIdx - 1]);
+    }
+  }, [activeDay]);
+
+  const swipeGesture = Gesture.Pan()
+    .activeOffsetX([-50, 50])
+    .onEnd((e: { translationX: number }) => {
+      if (e.translationX < -50) runOnJS(swipeDays)('left');
+      else if (e.translationX > 50) runOnJS(swipeDays)('right');
+    });
+
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Weekend</Text>
@@ -38,6 +57,7 @@ export default function ScheduleScreen() {
 
       <DayTabs activeDay={activeDay} onDayChange={setActiveDay} />
 
+      <GestureDetector gesture={swipeGesture}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -60,6 +80,7 @@ export default function ScheduleScreen() {
           </View>
         ))}
       </ScrollView>
+      </GestureDetector>
 
       <BottomSheet
         visible={selectedEvent !== null}
@@ -77,6 +98,7 @@ export default function ScheduleScreen() {
         )}
       </BottomSheet>
     </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
