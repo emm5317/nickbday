@@ -6,6 +6,7 @@ import {
   writeScore,
   writeEasterEgg,
   type FirebaseState,
+  type PlayerLocation,
 } from '@/lib/firebaseSync';
 
 interface AppState {
@@ -31,6 +32,9 @@ interface AppState {
   setMemoryPhotos: (
     photos: Array<{ uri: string; addedBy: string; timestamp: number }>
   ) => void;
+
+  // Locations (synced via Firebase)
+  locations: Record<string, PlayerLocation>;
 
   // Easter Eggs (synced via Firebase)
   unlockedEasterEggs: string[];
@@ -87,6 +91,8 @@ export const useAppStore = create<AppState>()(
         });
       },
 
+      locations: {},
+
       unlockedEasterEggs: [],
       unlockEasterEgg: (id) => {
         const player = get().currentPlayer;
@@ -111,6 +117,7 @@ export const useAppStore = create<AppState>()(
           memoryPhotos: data.memoryPhotos,
           memoryPhotoUris: data.memoryPhotos.map((p) => p.uri),
           unlockedEasterEggs: data.unlockedEasterEggs,
+          locations: data.locations,
         });
       },
     }),

@@ -43,6 +43,12 @@
           "photosPermission": "Nick's 30 accesses your photos to view your memories.",
           "savePhotosPermission": "Nick's 30 saves watermarked memories to your photo library."
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Nick's 30 uses your location to show your crew where you are during the weekend."
+        }
       ]
     ],
     "experiments": {

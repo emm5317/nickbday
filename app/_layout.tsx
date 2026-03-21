@@ -14,6 +14,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Colors } from '@/constants/theme';
 import { useEasterEggWatcher } from '@/hooks/useEasterEggWatcher';
+import { useLocationSharing } from '@/hooks/useLocationSharing';
 import { subscribeToState } from '@/lib/firebaseSync';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -53,6 +54,7 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   useEasterEggWatcher();
+  useLocationSharing();
   const syncFromFirebase = useAppStore((s) => s.syncFromFirebase);
 
   useEffect(() => {
@@ -70,6 +72,13 @@ function RootLayoutNav() {
         }}
       >
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="crew-map"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
         <Stack.Screen
           name="easter-egg"
           options={{ presentation: 'modal' }}

@@ -74,6 +74,18 @@ export async function uploadPhoto(
   return downloadUrl;
 }
 
+export function writeLocation(
+  playerName: string,
+  lat: number,
+  lng: number
+) {
+  return set(ref(db, `nick30/locations/${playerName}`), {
+    lat,
+    lng,
+    timestamp: Date.now(),
+  });
+}
+
 export function writeEasterEgg(eggId: string, playerName: string) {
   return set(ref(db, `nick30/easterEggs/${eggId}`), {
     unlocked: true,
@@ -83,11 +95,18 @@ export function writeEasterEgg(eggId: string, playerName: string) {
 
 // --- Realtime Database listeners ---
 
+export interface PlayerLocation {
+  lat: number;
+  lng: number;
+  timestamp: number;
+}
+
 export interface FirebaseState {
   triviaScores: Record<string, number>;
   challengesCompletedBy: Record<string, string[]>;
   memoryPhotos: Array<{ uri: string; addedBy: string; timestamp: number }>;
   unlockedEasterEggs: string[];
+  locations: Record<string, PlayerLocation>;
 }
 
 export function subscribeToState(
@@ -117,11 +136,15 @@ export function subscribeToState(
       .filter(([, val]: [string, any]) => val?.unlocked)
       .map(([key]) => key);
 
+    const locations: Record<string, PlayerLocation> =
+      data.locations || {};
+
     onUpdate({
       triviaScores,
       challengesCompletedBy,
       memoryPhotos,
       unlockedEasterEggs,
+      locations,
     });
   });
 

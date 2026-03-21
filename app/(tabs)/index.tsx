@@ -8,6 +8,7 @@ import { CountdownTimer } from '@/components/home/CountdownTimer';
 import { MarqueeDots } from '@/components/home/MarqueeDots';
 import { AvatarRing } from '@/components/home/AvatarRing';
 import { ModuleTile } from '@/components/home/ModuleTile';
+import { CrewCard } from '@/components/home/CrewCard';
 import { useAppStore } from '@/store/useAppStore';
 import { SCHEDULE } from '@/data/schedule';
 
@@ -89,6 +90,8 @@ export default function HomeScreen() {
             />
           </View>
         </View>
+
+        <CrewCard onPress={() => router.push('/crew-map' as any)} />
 
         {/* Hidden tortoise easter egg */}
         <Text style={styles.tortoise}>{'\u{1F422}'}</Text>
