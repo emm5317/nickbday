@@ -9,6 +9,10 @@ export const Colors = {
   goldLight: '#E2C97E',
   goldDark: '#8A6F2E',
 
+  // Warm accents
+  marqueeAmber: '#E8853A',
+  desertRust: '#C04A2A',
+
   // Neons
   neonPink: '#FF3D78',
   neonCyan: '#00D4C8',

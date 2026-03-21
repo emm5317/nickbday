@@ -1,12 +1,13 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Fonts } from '@/constants/theme';
+import { View, Image, Text, StyleSheet } from 'react-native';
+import { Colors } from '@/constants/theme';
 
 export function AvatarRing() {
   return (
     <View style={styles.ring}>
-      <View style={styles.inner}>
-        <Text style={styles.initial}>N</Text>
-      </View>
+      <Image
+        source={require('@/assets/images/nick.jpg')}
+        style={styles.photo}
+      />
       <View style={styles.badge}>
         <Text style={styles.badgeEmoji}>{'\u{1F451}'}</Text>
       </View>
@@ -14,9 +15,10 @@ export function AvatarRing() {
   );
 }
 
-const SIZE = 80;
-const BORDER = 3;
-const BADGE_SIZE = 24;
+const SIZE = 110;
+const BORDER = 2;
+const BADGE_SIZE = 30;
+const PHOTO_SIZE = SIZE - BORDER * 2 - 6;
 
 const styles = StyleSheet.create({
   ring: {
@@ -25,22 +27,14 @@ const styles = StyleSheet.create({
     borderRadius: SIZE / 2,
     borderWidth: BORDER,
     borderColor: Colors.gold,
+    borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  inner: {
-    width: SIZE - BORDER * 2,
-    height: SIZE - BORDER * 2,
-    borderRadius: (SIZE - BORDER * 2) / 2,
-    backgroundColor: Colors.bgCard,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initial: {
-    fontFamily: Fonts.displayBlack,
-    fontSize: 32,
-    color: Colors.gold,
-    marginTop: -2,
+  photo: {
+    width: PHOTO_SIZE,
+    height: PHOTO_SIZE,
+    borderRadius: PHOTO_SIZE / 2,
   },
   badge: {
     position: 'absolute',
@@ -54,6 +48,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   badgeEmoji: {
-    fontSize: 14,
+    fontSize: 16,
   },
 });

@@ -8,7 +8,7 @@ export function CountdownTimer() {
   if (isWeekendOver) {
     return (
       <View style={styles.pill}>
-        <Text style={styles.text}>WEEKEND OVER \u2014 MEMORIES MADE</Text>
+        <Text style={styles.text}>WEEKEND OVER — MEMORIES MADE</Text>
       </View>
     );
   }
@@ -25,7 +25,7 @@ export function CountdownTimer() {
     <View style={styles.pill}>
       <View style={styles.dot} />
       <Text style={styles.text}>
-        {days} DAYS \u00B7 {hours} HRS \u00B7 {minutes} MIN
+        {days} DAYS · {hours} HRS · {minutes} MIN
       </Text>
     </View>
   );
@@ -47,12 +47,12 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.neonPink,
+    backgroundColor: Colors.marqueeAmber,
   },
   text: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 10,
-    letterSpacing: 2,
+    fontSize: 12,
+    letterSpacing: 2.5,
     color: Colors.goldLight,
   },
 });

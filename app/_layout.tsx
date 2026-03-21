@@ -63,15 +63,6 @@ function RootLayoutNav() {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
-          name="challenges"
-          options={{
-            headerShown: true,
-            headerTitle: 'Challenges',
-            headerStyle: { backgroundColor: Colors.bgDeep },
-            headerTintColor: Colors.gold,
-          }}
-        />
-        <Stack.Screen
           name="easter-egg"
           options={{ presentation: 'modal' }}
         />

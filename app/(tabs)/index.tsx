@@ -3,7 +3,9 @@ import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
+import { Starfield } from '@/components/home/Starfield';
 import { CountdownTimer } from '@/components/home/CountdownTimer';
+import { MarqueeDots } from '@/components/home/MarqueeDots';
 import { AvatarRing } from '@/components/home/AvatarRing';
 import { ModuleTile } from '@/components/home/ModuleTile';
 import { useAppStore } from '@/store/useAppStore';
@@ -28,17 +30,20 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Starfield />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.eyebrow}>LAS VEGAS {'\u00B7'} 2026</Text>
+        <Text style={styles.eyebrow}>LAS VEGAS · APRIL 2026</Text>
 
         <Text style={styles.hero}>
           Nick's <Text style={styles.heroAccent}>30</Text>
         </Text>
 
-        <Text style={styles.subhead}>THE LEGEND TURNS THIRTY</Text>
+        <Text style={styles.subhead}>PHAMILY AT THE SPHERE</Text>
+
+        <MarqueeDots />
 
         <View style={styles.countdownWrap}>
           <CountdownTimer />
@@ -51,34 +56,42 @@ export default function HomeScreen() {
         <View style={styles.grid}>
           <View style={styles.gridRow}>
             <ModuleTile
-              icon={'\u{1F4C5}'}
+              icon={'\u2666'}
+              iconColor={Colors.gold}
               label="SCHEDULE"
               sublabel={`${SCHEDULE.length} events`}
               onPress={() => router.push('/(tabs)/schedule')}
             />
             <ModuleTile
-              icon={'\u{1F3AF}'}
+              icon={'\u2660'}
+              iconColor={Colors.marqueeAmber}
               label="NICK TRIVIA"
               sublabel={triviaSubLabel}
               badge={triviaCompleted ? undefined : 'NEW'}
-              onPress={() => router.push('/(tabs)/trivia')}
+              onPress={() => router.push('/(tabs)/trivia' as any)}
             />
           </View>
           <View style={styles.gridRow}>
             <ModuleTile
-              icon={'\u{26A1}'}
-              label="CHALLENGES"
+              icon={'\u2663'}
+              iconColor={Colors.neonCyan}
+              label="BINGO"
               sublabel={`${challengeCount} of 25 done`}
-              onPress={() => router.push('/challenges')}
+              badge={'\u2663'}
+              onPress={() => router.push('/(tabs)/challenges')}
             />
             <ModuleTile
-              icon={'\u{1F4F8}'}
+              icon={'\u2665'}
+              iconColor={Colors.neonPink}
               label="MEMORIES"
               sublabel={`${photoCount} photos`}
               onPress={() => router.push('/(tabs)/memories')}
             />
           </View>
         </View>
+
+        {/* Hidden tortoise easter egg */}
+        <Text style={styles.tortoise}>{'\u{1F422}'}</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -91,29 +104,29 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.xxl,
-    paddingBottom: Spacing.xxl + 16,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.xxl + 40,
   },
   eyebrow: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 9,
+    fontSize: 11,
     letterSpacing: 3,
     color: Colors.gold,
     marginBottom: Spacing.md,
   },
   hero: {
     fontFamily: Fonts.displayBlack,
-    fontSize: 40,
+    fontSize: 52,
     color: Colors.goldLight,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   heroAccent: {
     color: Colors.gold,
   },
   subhead: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 10,
+    fontSize: 11,
     letterSpacing: 4,
     color: Colors.textSecondary,
   },
@@ -131,5 +144,12 @@ const styles = StyleSheet.create({
   gridRow: {
     flexDirection: 'row',
     gap: Spacing.md,
+  },
+  tortoise: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    fontSize: 40,
+    opacity: 0.12,
   },
 });
