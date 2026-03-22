@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bgCard,
     borderWidth: 1,
     borderColor: Colors.border,
-    borderRadius: Radii.sm,
+    borderRadius: Radii.md,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 2,

@@ -7,25 +7,85 @@ interface ModuleTileProps {
   label: string;
   sublabel: string;
   badge?: string;
+  badgeVariant?: 'new' | 'active' | 'completed';
+  suitWatermark?: string;
+  borderColor?: string;
+  progress?: { percent: number; label: string };
   onPress: () => void;
 }
 
-export function ModuleTile({ icon, iconColor, label, sublabel, badge, onPress }: ModuleTileProps) {
+export function ModuleTile({
+  icon,
+  iconColor,
+  label,
+  sublabel,
+  badge,
+  badgeVariant = 'new',
+  suitWatermark,
+  borderColor,
+  progress,
+  onPress,
+}: ModuleTileProps) {
+  const badgeBg =
+    badgeVariant === 'completed'
+      ? 'rgba(0,212,200,0.15)'
+      : badgeVariant === 'active'
+        ? 'rgba(232,133,58,0.2)'
+        : Colors.neonPink;
+  const badgeBorderColor =
+    badgeVariant === 'completed'
+      ? 'rgba(0,212,200,0.35)'
+      : badgeVariant === 'active'
+        ? 'rgba(232,133,58,0.3)'
+        : 'transparent';
+  const badgeTextColor =
+    badgeVariant === 'completed'
+      ? '#4DE8E2'
+      : badgeVariant === 'active'
+        ? '#F0A060'
+        : '#FFFFFF';
+
   return (
     <Pressable
-      style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.tile,
+        borderColor ? { borderColor } : undefined,
+        pressed && styles.pressed,
+      ]}
       onPress={onPress}
     >
       <View style={styles.iconRow}>
         <Text style={[styles.icon, iconColor ? { color: iconColor } : undefined]}>{icon}</Text>
         {badge ? (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{badge}</Text>
+          <View
+            style={[
+              styles.badge,
+              {
+                backgroundColor: badgeBg,
+                borderColor: badgeBorderColor,
+                borderWidth: badgeVariant === 'completed' || badgeVariant === 'active' ? 0.5 : 0,
+              },
+            ]}
+          >
+            <Text style={[styles.badgeText, { color: badgeTextColor }]}>{badge}</Text>
           </View>
         ) : null}
       </View>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.sublabel}>{sublabel}</Text>
+      <View>
+        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.sublabel}>{sublabel}</Text>
+        {progress ? (
+          <View style={styles.progressWrap}>
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: `${progress.percent}%` }]} />
+            </View>
+            <Text style={styles.progressLabel}>{progress.label}</Text>
+          </View>
+        ) : null}
+      </View>
+      {suitWatermark ? (
+        <Text style={styles.watermark}>{suitWatermark}</Text>
+      ) : null}
     </Pressable>
   );
 }
@@ -34,12 +94,13 @@ const styles = StyleSheet.create({
   tile: {
     flex: 1,
     backgroundColor: Colors.bgCard,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: Colors.border,
-    borderRadius: Radii.lg,
-    padding: Spacing.xl,
-    gap: Spacing.sm,
-    minHeight: 110,
+    borderRadius: Radii.xl2,
+    padding: Spacing.lg,
+    justifyContent: 'space-between',
+    minHeight: 112,
+    overflow: 'hidden',
   },
   pressed: {
     opacity: 0.7,
@@ -50,30 +111,61 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   icon: {
-    fontSize: 28,
+    fontSize: 24,
     color: Colors.gold,
   },
   badge: {
-    backgroundColor: Colors.neonPink,
     paddingVertical: 2,
     paddingHorizontal: Spacing.sm,
-    borderRadius: Radii.sm,
+    borderRadius: 6,
   },
   badgeText: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 8,
-    letterSpacing: 1,
-    color: '#FFFFFF',
+    fontSize: 7,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   label: {
-    fontFamily: Fonts.bodyMedium,
-    fontSize: 14,
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 11,
+    letterSpacing: 1,
     color: Colors.textPrimary,
-    marginTop: Spacing.sm,
+    textTransform: 'uppercase',
+    marginBottom: 3,
   },
   sublabel: {
     fontFamily: Fonts.body,
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: 9,
+    color: Colors.textMuted,
+    lineHeight: 13,
+  },
+  progressWrap: {
+    marginTop: 6,
+  },
+  progressBar: {
+    height: 2,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+    backgroundColor: Colors.neonCyan,
+  },
+  progressLabel: {
+    fontFamily: Fonts.body,
+    fontSize: 7,
+    color: 'rgba(0,212,200,0.6)',
+    marginTop: 2,
+    letterSpacing: 0.5,
+  },
+  watermark: {
+    position: 'absolute',
+    right: -3,
+    bottom: -10,
+    fontSize: 62,
+    opacity: 0.04,
+    lineHeight: 62,
   },
 });

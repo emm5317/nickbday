@@ -11,11 +11,13 @@ import { ModuleTile } from '@/components/home/ModuleTile';
 import { CrewCard } from '@/components/home/CrewCard';
 import { useAppStore } from '@/store/useAppStore';
 import { SCHEDULE } from '@/data/schedule';
+import { CHALLENGES, BINGO_LINES } from '@/data/challenges';
 
 export default function HomeScreen() {
   const router = useRouter();
   const currentPlayer = useAppStore((s) => s.currentPlayer);
   const triviaCompleted = useAppStore((s) => s.triviaCompleted);
+  const triviaScores = useAppStore((s) => s.triviaScores);
   const completedChallenges = useAppStore((s) => s.completedChallenges);
   const memoryPhotoUris = useAppStore((s) => s.memoryPhotoUris);
 
@@ -25,8 +27,24 @@ export default function HomeScreen() {
     }
   }, [currentPlayer, router]);
 
-  const triviaSubLabel = triviaCompleted ? 'Completed' : '30 questions';
+  // Trivia leader
+  const scoreEntries = Object.entries(triviaScores);
+  const triviaLeader = scoreEntries.length > 0
+    ? scoreEntries.sort(([, a], [, b]) => b - a)[0]
+    : null;
+  const triviaSublabel = triviaCompleted && triviaLeader
+    ? `${triviaLeader[0]} leads \u00B7 ${triviaLeader[1]}/30`
+    : triviaCompleted
+      ? 'Completed'
+      : '30 questions';
+
+  // Bingo progress
   const challengeCount = completedChallenges.length;
+  const bingoPercent = Math.round((challengeCount / 25) * 100);
+  const bingoLineCount = BINGO_LINES.filter((line) =>
+    line.every((idx) => completedChallenges.includes(CHALLENGES[idx].id))
+  ).length;
+
   const photoCount = memoryPhotoUris.length;
 
   return (
@@ -36,7 +54,7 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.eyebrow}>LAS VEGAS · APRIL 2026</Text>
+        <Text style={styles.eyebrow}>LAS VEGAS {'\u00B7'} APRIL 2026</Text>
 
         <Text style={styles.hero}>
           Nick's <Text style={styles.heroAccent}>30</Text>
@@ -60,15 +78,20 @@ export default function HomeScreen() {
               icon={'\u2666'}
               iconColor={Colors.gold}
               label="SCHEDULE"
-              sublabel={`${SCHEDULE.length} events`}
+              sublabel={`${SCHEDULE.length} events \u00B7 Apr 16\u201319`}
+              suitWatermark={'\u2666'}
+              borderColor="rgba(201,168,76,0.26)"
               onPress={() => router.push('/(tabs)/schedule')}
             />
             <ModuleTile
               icon={'\u2660'}
               iconColor={Colors.marqueeAmber}
               label="NICK TRIVIA"
-              sublabel={triviaSubLabel}
-              badge={triviaCompleted ? undefined : 'NEW'}
+              sublabel={triviaSublabel}
+              badge={triviaCompleted ? 'Completed' : 'NEW'}
+              badgeVariant={triviaCompleted ? 'completed' : 'new'}
+              suitWatermark={'\u2660'}
+              borderColor="rgba(232,133,58,0.22)"
               onPress={() => router.push('/(tabs)/trivia' as any)}
             />
           </View>
@@ -78,14 +101,23 @@ export default function HomeScreen() {
               iconColor={Colors.neonCyan}
               label="BINGO"
               sublabel={`${challengeCount} of 25 done`}
-              badge={'\u2663'}
+              badge="Active"
+              badgeVariant="active"
+              suitWatermark={'\u2663'}
+              borderColor="rgba(0,212,200,0.22)"
+              progress={{
+                percent: bingoPercent,
+                label: `${bingoPercent}% complete \u00B7 ${bingoLineCount} bingo line${bingoLineCount !== 1 ? 's' : ''}`,
+              }}
               onPress={() => router.push('/(tabs)/challenges')}
             />
             <ModuleTile
               icon={'\u2665'}
               iconColor={Colors.neonPink}
               label="MEMORIES"
-              sublabel={`${photoCount} photos`}
+              sublabel={`${photoCount} photo${photoCount !== 1 ? 's' : ''} saved`}
+              suitWatermark={'\u2665'}
+              borderColor="rgba(232,48,96,0.22)"
               onPress={() => router.push('/(tabs)/memories')}
             />
           </View>
@@ -107,46 +139,48 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: 14,
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.xxl + 40,
   },
   eyebrow: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 11,
+    fontSize: 8,
     letterSpacing: 3,
-    color: Colors.gold,
-    marginBottom: Spacing.md,
+    color: 'rgba(201,168,76,0.7)',
+    marginBottom: 5,
   },
   hero: {
     fontFamily: Fonts.displayBlack,
-    fontSize: 52,
+    fontSize: 56,
     color: Colors.goldLight,
-    marginBottom: Spacing.xs,
+    lineHeight: 52,
+    letterSpacing: -1,
   },
   heroAccent: {
     color: Colors.gold,
   },
   subhead: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 11,
-    letterSpacing: 4,
-    color: Colors.textSecondary,
+    fontSize: 8,
+    letterSpacing: 3,
+    color: Colors.textMuted,
+    marginTop: 6,
   },
   countdownWrap: {
-    marginTop: Spacing.xl,
+    marginTop: Spacing.md,
   },
   avatarWrap: {
-    marginTop: Spacing.xl,
+    marginTop: Spacing.lg,
   },
   grid: {
     width: '100%',
-    marginTop: Spacing.xxl,
-    gap: Spacing.md,
+    marginTop: 18,
+    gap: 9,
   },
   gridRow: {
     flexDirection: 'row',
-    gap: Spacing.md,
+    gap: 9,
   },
   tortoise: {
     position: 'absolute',

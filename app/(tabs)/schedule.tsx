@@ -1,12 +1,17 @@
-import { useState, useCallback, useRef } from 'react';
-import { View, ScrollView, Text, StyleSheet, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { useState, useMemo, useCallback, useRef } from 'react';
+import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Fonts, Spacing } from '@/constants/theme';
+import { useLocalSearchParams } from 'expo-router';
+import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 import { DayTabs } from '@/components/schedule/DayTabs';
 import { EventCard } from '@/components/schedule/EventCard';
 import { TimelineConnector } from '@/components/schedule/TimelineConnector';
-import { BottomSheet } from '@/components/ui/BottomSheet';
-import { SCHEDULE, DAYS, type Day, type ScheduleEvent } from '@/data/schedule';
+import { TimeSection } from '@/components/schedule/TimeSection';
+import { SphereBanner } from '@/components/schedule/SphereBanner';
+import { NextUpBanner } from '@/components/schedule/NextUpBanner';
+import { VibeFoot } from '@/components/schedule/VibeFoot';
+import { MarqueeDots } from '@/components/home/MarqueeDots';
+import { SCHEDULE, DAYS, DAY_VIBES, type Day, type ScheduleEvent } from '@/data/schedule';
 
 function getDefaultDay(): Day {
   const now = new Date();
@@ -24,29 +29,63 @@ function getDefaultDay(): Day {
 }
 
 export default function ScheduleScreen() {
-  const [activeDay, setActiveDay] = useState<Day>(getDefaultDay);
-  const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
+  const params = useLocalSearchParams<{ day?: string }>();
+  const [activeDay, setActiveDay] = useState<Day>(
+    () => (params.day as Day) || getDefaultDay()
+  );
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const touchStartX = useRef(0);
 
   const dayEvents = SCHEDULE.filter((e) => e.day === activeDay);
+
+  const groupedEvents = useMemo(() => {
+    const groups: Array<{ section: string; events: ScheduleEvent[] }> = [];
+    let currentSection = '';
+    for (const event of dayEvents) {
+      const section = event.timeSection || 'GENERAL';
+      if (section !== currentSection) {
+        groups.push({ section, events: [event] });
+        currentSection = section;
+      } else {
+        groups[groups.length - 1].events.push(event);
+      }
+    }
+    return groups;
+  }, [dayEvents]);
 
   const swipeDays = useCallback((direction: 'left' | 'right') => {
     const currentIdx = DAYS.indexOf(activeDay);
     if (direction === 'left' && currentIdx < DAYS.length - 1) {
       setActiveDay(DAYS[currentIdx + 1]);
+      setExpandedId(null);
     } else if (direction === 'right' && currentIdx > 0) {
       setActiveDay(DAYS[currentIdx - 1]);
+      setExpandedId(null);
     }
   }, [activeDay]);
+
+  const nextUpEvent = dayEvents.find((e) => e.isNextUp);
+  const vibeData = DAY_VIBES[activeDay];
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Weekend</Text>
-        <Text style={styles.subtitle}>LAS VEGAS · APR 16-19</Text>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>Weekend</Text>
+            <Text style={styles.subtitle}>{'\u2666'} Las Vegas {'\u00B7'} Apr 16{'\u2013'}19, 2026</Text>
+          </View>
+          <View style={styles.eventCountPill}>
+            <Text style={styles.eventCountText}>{dayEvents.length} Events</Text>
+          </View>
+        </View>
       </View>
 
-      <DayTabs activeDay={activeDay} onDayChange={setActiveDay} />
+      <View style={styles.marqueWrap}>
+        <MarqueeDots />
+      </View>
+
+      <DayTabs activeDay={activeDay} onDayChange={(day) => { setActiveDay(day); setExpandedId(null); }} />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -60,40 +99,53 @@ export default function ScheduleScreen() {
           else if (dx > 60) swipeDays('right');
         }}
       >
-        {dayEvents.map((event, index) => (
-          <View key={event.id} style={styles.eventRow}>
-            <View style={styles.timeColumn}>
-              <Text style={styles.timeText}>{event.time}</Text>
-              <TimelineConnector
-                dotColor={event.tagColor}
-                isLast={index === dayEvents.length - 1}
-              />
+        {/* Next Up banner — SAT only */}
+        {activeDay === 'SAT' && nextUpEvent && (
+          <NextUpBanner eventName={nextUpEvent.name} time={nextUpEvent.time} />
+        )}
+
+        {/* Sphere banner — FRI only */}
+        {activeDay === 'FRI' && (
+          <SphereBanner onPress={() => setExpandedId('fri-3')} />
+        )}
+
+        {groupedEvents.map(({ section, events }) => (
+          <View key={section}>
+            <View style={styles.timeSectionWrap}>
+              <TimeSection label={section} />
             </View>
-            <View style={styles.cardColumn}>
-              <EventCard
-                event={event}
-                onPress={() => setSelectedEvent(event)}
-              />
-            </View>
+            {events.map((event, index) => (
+              <View key={event.id} style={styles.eventRow}>
+                <View style={styles.timeColumn}>
+                  <Text style={styles.timeHour}>
+                    {event.time.replace(/ [AP]M/, '')}
+                  </Text>
+                  <Text style={styles.timePeriod}>
+                    {event.time.includes('AM') ? 'AM' : event.time.includes('PM') ? 'PM' : ''}
+                  </Text>
+                </View>
+                <View style={styles.timelineColumn}>
+                  <TimelineConnector
+                    dotColor={event.tagColor}
+                    isLast={index === events.length - 1}
+                  />
+                </View>
+                <View style={styles.cardColumn}>
+                  <EventCard
+                    event={event}
+                    isExpanded={expandedId === event.id}
+                    onToggle={() =>
+                      setExpandedId(expandedId === event.id ? null : event.id)
+                    }
+                  />
+                </View>
+              </View>
+            ))}
           </View>
         ))}
-      </ScrollView>
 
-      <BottomSheet
-        visible={selectedEvent !== null}
-        onClose={() => setSelectedEvent(null)}
-      >
-        {selectedEvent && (
-          <View style={styles.sheetContent}>
-            <Text style={styles.sheetTime}>{selectedEvent.time}</Text>
-            <Text style={styles.sheetName}>{selectedEvent.name}</Text>
-            <Text style={styles.sheetVenue}>{selectedEvent.venue}</Text>
-            {selectedEvent.notes && (
-              <Text style={styles.sheetNotes}>{selectedEvent.notes}</Text>
-            )}
-          </View>
-        )}
-      </BottomSheet>
+        <VibeFoot {...vibeData} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -104,70 +156,85 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bgDeep,
   },
   header: {
-    paddingHorizontal: Spacing.xl,
+    paddingHorizontal: 18,
     paddingTop: Spacing.lg,
-    paddingBottom: Spacing.lg,
+    paddingBottom: 4,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
   },
   title: {
     fontFamily: Fonts.displayBlack,
-    fontSize: 32,
-    color: Colors.textPrimary,
+    fontSize: 28,
+    color: Colors.goldLight,
+    lineHeight: 28,
   },
   subtitle: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 10,
-    letterSpacing: 3,
+    fontSize: 8,
+    letterSpacing: 2,
+    color: 'rgba(201,168,76,0.6)',
+    marginTop: 3,
+    textTransform: 'uppercase',
+  },
+  eventCountPill: {
+    backgroundColor: 'rgba(201,168,76,0.1)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(201,168,76,0.28)',
+    borderRadius: Radii.full,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginBottom: 2,
+  },
+  eventCountText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 8,
+    letterSpacing: 0.8,
     color: Colors.gold,
-    marginTop: Spacing.xs,
+  },
+  marqueWrap: {
+    paddingVertical: 8,
   },
   scrollContent: {
-    paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.xxl + 40,
+    paddingTop: 6,
+    paddingBottom: Spacing.xxl + 80,
+  },
+  timeSectionWrap: {
+    paddingHorizontal: 14,
+    marginTop: 18,
+    marginBottom: 6,
   },
   eventRow: {
     flexDirection: 'row',
-    marginBottom: Spacing.md,
+    gap: 8,
+    paddingHorizontal: 14,
+    marginBottom: 8,
   },
   timeColumn: {
-    width: 64,
-    alignItems: 'center',
-    paddingTop: 2,
+    width: 30,
+    alignItems: 'flex-end',
+    paddingTop: 11,
   },
-  timeText: {
+  timeHour: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 10,
+    color: 'rgba(240,232,208,0.6)',
+    lineHeight: 11,
+  },
+  timePeriod: {
     fontFamily: Fonts.body,
-    fontSize: 11,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.sm,
-    textAlign: 'center',
+    fontSize: 7,
+    color: Colors.textMuted,
+    letterSpacing: 0.3,
+  },
+  timelineColumn: {
+    alignItems: 'center',
+    paddingTop: 11,
+    width: 14,
   },
   cardColumn: {
     flex: 1,
-    marginLeft: Spacing.md,
-  },
-  sheetContent: {
-    gap: Spacing.sm,
-  },
-  sheetTime: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 12,
-    letterSpacing: 2,
-    color: Colors.gold,
-  },
-  sheetName: {
-    fontFamily: Fonts.display,
-    fontSize: 22,
-    color: Colors.textPrimary,
-  },
-  sheetVenue: {
-    fontFamily: Fonts.body,
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  sheetNotes: {
-    fontFamily: Fonts.body,
-    fontSize: 13,
-    color: Colors.textSecondary,
-    fontStyle: 'italic',
-    marginTop: Spacing.sm,
   },
 });

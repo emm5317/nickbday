@@ -17,13 +17,13 @@ export function TimelineConnector({ dotColor, isLast }: TimelineConnectorProps) 
   );
 }
 
-const DOT_SIZE = 10;
+const DOT_SIZE = 8;
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     width: DOT_SIZE,
-    marginTop: 6,
+    marginTop: 2,
   },
   dot: {
     width: DOT_SIZE,
@@ -33,7 +33,8 @@ const styles = StyleSheet.create({
   line: {
     width: 1,
     flex: 1,
-    backgroundColor: Colors.border,
-    minHeight: 40,
+    backgroundColor: 'rgba(201,168,76,0.1)',
+    minHeight: 24,
+    marginTop: 3,
   },
 });

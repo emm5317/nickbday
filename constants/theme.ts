@@ -50,6 +50,7 @@ export const Radii = {
   md: 12,
   lg: 16,
   xl: 24,
+  xl2: 20,
   full: 9999,
 } as const;
 
@@ -58,4 +59,7 @@ export const TagColors = {
   pink: { bg: 'rgba(255,61,120,0.2)', text: '#FF7DAA' },
   cyan: { bg: 'rgba(0,212,200,0.2)', text: '#4DE8E2' },
   purple: { bg: 'rgba(150,100,240,0.2)', text: '#C4A8FF' },
+  amber: { bg: 'rgba(232,133,58,0.2)', text: '#F0A060' },
+  green: { bg: 'rgba(60,184,120,0.2)', text: '#7EDCAA' },
+  rust: { bg: 'rgba(192,74,42,0.2)', text: '#E8855A' },
 } as const;

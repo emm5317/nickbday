@@ -18,6 +18,9 @@ interface CrewCardProps {
 export function CrewCard({ onPress }: CrewCardProps) {
   const locations = useAppStore((s) => s.locations);
 
+  const isPlayerOnline = (name: string) =>
+    name in locations && Date.now() - locations[name].timestamp < 10 * 60 * 1000;
+
   const activeCount = Object.values(locations).filter(
     (loc) => Date.now() - loc.timestamp < 10 * 60 * 1000
   ).length;
@@ -29,31 +32,47 @@ export function CrewCard({ onPress }: CrewCardProps) {
     >
       <View style={styles.header}>
         <Text style={styles.title}>Find the Crew</Text>
-        <Text style={styles.status}>
-          {activeCount} of {PLAYERS.length} online
-        </Text>
+        <View style={styles.onlinePill}>
+          <Text style={styles.onlineText}>
+            {activeCount} of {PLAYERS.length} online
+          </Text>
+        </View>
       </View>
 
-      <View style={styles.dots}>
+      <View style={styles.row}>
         {PLAYERS.map((name) => {
-          const isOnline =
-            name in locations &&
-            Date.now() - locations[name].timestamp < 10 * 60 * 1000;
+          const online = isPlayerOnline(name);
+          const isNick = name === 'Nick';
+          const color = PLAYER_COLORS[name] || Colors.gold;
+
           return (
-            <View key={name} style={styles.playerDot}>
+            <View key={name} style={styles.member}>
               <View
                 style={[
-                  styles.dot,
-                  {
-                    backgroundColor: isOnline
-                      ? PLAYER_COLORS[name] || Colors.gold
-                      : Colors.textMuted,
-                  },
+                  styles.avatar,
+                  isNick && styles.avatarNick,
+                  online && { borderColor: 'rgba(0,212,200,0.55)' },
+                  !online && !isNick && { borderColor: 'rgba(201,168,76,0.18)' },
                 ]}
-              />
-              <Text
-                style={[styles.dotLabel, !isOnline && styles.dotLabelOffline]}
               >
+                <Text
+                  style={[
+                    styles.avatarLetter,
+                    isNick && styles.avatarLetterNick,
+                    !isNick && !online && { color: Colors.textMuted },
+                    online && !isNick && { color: Colors.neonCyan },
+                  ]}
+                >
+                  {name[0]}
+                </Text>
+                <View
+                  style={[
+                    styles.statusDot,
+                    online ? styles.statusOnline : styles.statusOffline,
+                  ]}
+                />
+              </View>
+              <Text style={[styles.name, online && styles.nameOnline]}>
                 {name}
               </Text>
             </View>
@@ -64,14 +83,16 @@ export function CrewCard({ onPress }: CrewCardProps) {
   );
 }
 
+const AVATAR_SIZE = 44;
+
 const styles = StyleSheet.create({
   card: {
     width: '100%',
     backgroundColor: Colors.bgCard,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: Colors.border,
-    borderRadius: Radii.lg,
-    padding: Spacing.xl,
+    borderRadius: Radii.xl2,
+    padding: Spacing.lg,
     marginTop: Spacing.md,
   },
   pressed: {
@@ -81,38 +102,83 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
   },
   title: {
-    fontFamily: Fonts.bodyMedium,
-    fontSize: 14,
-    color: Colors.textPrimary,
-  },
-  status: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 10,
-    letterSpacing: 1,
-    color: Colors.gold,
+    fontSize: 12,
+    color: Colors.textPrimary,
+    letterSpacing: 0.3,
   },
-  dots: {
+  onlinePill: {
+    backgroundColor: 'rgba(0,212,200,0.1)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0,212,200,0.25)',
+    borderRadius: Radii.full,
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+  },
+  onlineText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 8,
+    letterSpacing: 0.8,
+    color: Colors.neonCyan,
+  },
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  playerDot: {
+  member: {
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: 6,
+    flex: 1,
   },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  avatar: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    backgroundColor: Colors.bgElevated,
+    borderWidth: 1.5,
+    borderColor: 'rgba(201,168,76,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  dotLabel: {
-    fontFamily: Fonts.body,
-    fontSize: 9,
-    color: Colors.textSecondary,
+  avatarNick: {
+    borderColor: 'rgba(201,168,76,0.58)',
+    backgroundColor: 'rgba(26,30,56,1)',
   },
-  dotLabelOffline: {
+  avatarLetter: {
+    fontFamily: Fonts.display,
+    fontSize: 14,
     color: Colors.textMuted,
+  },
+  avatarLetterNick: {
+    color: Colors.goldLight,
+    fontSize: 16,
+  },
+  statusDot: {
+    position: 'absolute',
+    bottom: -1,
+    right: -1,
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: Colors.bgCard,
+  },
+  statusOnline: {
+    backgroundColor: Colors.neonCyan,
+  },
+  statusOffline: {
+    backgroundColor: 'rgba(200,195,220,0.22)',
+  },
+  name: {
+    fontFamily: Fonts.body,
+    fontSize: 8,
+    color: Colors.textMuted,
+    letterSpacing: 0.3,
+  },
+  nameOnline: {
+    color: 'rgba(240,232,208,0.62)',
   },
 });

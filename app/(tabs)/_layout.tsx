@@ -12,9 +12,9 @@ function SuitIcon({ suit, color }: { suit: string; color: string }) {
 
 function HomeIcon() {
   return (
-    <View style={styles.homeCircle}>
+    <View style={styles.homeWrap}>
       <Image
-        source={require('@/assets/images/sphere.png')}
+        source={require('@/assets/images/sphere-home.png')}
         style={styles.homeImage}
       />
     </View>
@@ -83,16 +83,14 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  homeCircle: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    overflow: 'hidden',
-    marginTop: -18,
+  homeWrap: {
+    marginTop: -20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   homeImage: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
   },
 });

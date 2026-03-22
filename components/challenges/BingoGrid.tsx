@@ -1,31 +1,16 @@
 import { View, FlatList, StyleSheet } from 'react-native';
-import { CHALLENGES } from '@/data/challenges';
+import { CHALLENGES, BINGO_LINES } from '@/data/challenges';
 import { useAppStore } from '@/store/useAppStore';
 import { BingoCell, CELL_SIZE, GAP } from './BingoCell';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { GoldButton } from '@/components/ui/GoldButton';
 import { Badge } from '@/components/ui/Badge';
-import { Colors, Fonts, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 import { useState, useRef, useEffect } from 'react';
 import { Text } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import type { Challenge } from '@/data/challenges';
-
-const BINGO_LINES = [
-  [0, 1, 2, 3, 4],
-  [5, 6, 7, 8, 9],
-  [10, 11, 12, 13, 14],
-  [15, 16, 17, 18, 19],
-  [20, 21, 22, 23, 24],
-  [0, 5, 10, 15, 20],
-  [1, 6, 11, 16, 21],
-  [2, 7, 12, 17, 22],
-  [3, 8, 13, 18, 23],
-  [4, 9, 14, 19, 24],
-  [0, 6, 12, 18, 24],
-  [4, 8, 12, 16, 20],
-];
 
 function getCompletedBingoLines(completedIds: string[]): number[][] {
   return BINGO_LINES.filter((line) =>
@@ -76,6 +61,17 @@ export function BingoGrid() {
 
   return (
     <>
+      {bingoLines.length > 0 && (
+        <View style={styles.bingoBanner}>
+          <View style={styles.bingoPulse} />
+          <Text style={styles.bingoBannerText}>
+            {bingoLines.length === 1
+              ? 'BINGO! Line complete \u{1F389}'
+              : `${bingoLines.length} BINGO LINES! \u{1F389}\u{1F389}`}
+          </Text>
+        </View>
+      )}
+
       <FlatList
         data={CHALLENGES}
         numColumns={5}
@@ -174,5 +170,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.gold,
     marginTop: Spacing.md,
+  },
+  bingoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    backgroundColor: 'rgba(0,212,200,0.08)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0,212,200,0.35)',
+    borderRadius: Radii.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    marginHorizontal: Spacing.xl,
+    marginBottom: Spacing.md,
+  },
+  bingoPulse: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: Colors.neonCyan,
+  },
+  bingoBannerText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 9,
+    letterSpacing: 0.6,
+    color: 'rgba(0,212,200,0.85)',
   },
 });

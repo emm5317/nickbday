@@ -15,7 +15,7 @@ export function AvatarRing() {
   );
 }
 
-const SIZE = 110;
+const SIZE = 96;
 const BORDER = 2;
 const BADGE_SIZE = 30;
 const PHOTO_SIZE = SIZE - BORDER * 2 - 6;
