@@ -252,22 +252,6 @@ export const SCHEDULE: ScheduleEvent[] = [
     ],
   },
   {
-    id: 'sat-4',
-    day: 'SAT',
-    time: '10 PM',
-    timeISO: '2026-04-18T22:00:00-07:00',
-    name: 'Club XS',
-    venue: 'Encore \u00B7 Table 14 \u00B7 Confirm by 9:30 PM',
-    tag: 'vip',
-    tagLabel: 'VIP TABLE',
-    tagColor: 'pink',
-    timeSection: 'EVENING',
-    details: [
-      { icon: '\u{1F3AB}', text: 'Table 14. Text the host at 9:30 PM. Dress code strictly enforced.' },
-      { icon: '\u{1F483}', text: 'Bingo: Nick Worm, Dance Floor \u2014 this is the night.' },
-    ],
-  },
-  {
     id: 'sat-5',
     day: 'SAT',
     time: '2 AM',
