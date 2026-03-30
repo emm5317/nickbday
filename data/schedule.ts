@@ -90,6 +90,21 @@ export const SCHEDULE: ScheduleEvent[] = [
 
   // --- FRIDAY Apr 17 (Birthday Day) ---
   {
+    id: 'fri-0',
+    day: 'FRI',
+    time: '9 AM – 5 PM',
+    timeISO: '2026-04-17T09:00:00-07:00',
+    name: 'Pool Cabana',
+    venue: 'Paris Las Vegas · Pool Deck',
+    tag: 'confirmed',
+    tagLabel: 'ALL DAY',
+    tagColor: 'cyan',
+    timeSection: 'MORNING',
+    details: [
+      { icon: '🏖️', text: 'Cabana reserved 9 AM – 5 PM. Sunscreen, shades, good vibes.' },
+    ],
+  },
+  {
     id: 'fri-1',
     day: 'FRI',
     time: '11 AM',
@@ -140,6 +155,21 @@ export const SCHEDULE: ScheduleEvent[] = [
     ],
   },
   {
+    id: 'fri-3b',
+    day: 'FRI',
+    time: '8:15 PM – 10:30 PM',
+    timeISO: '2026-04-17T20:15:00-07:00',
+    name: 'Dinner — Toca Moderna',
+    venue: 'Toca Moderna · Reservation @ 8:15 PM',
+    tag: 'confirmed',
+    tagLabel: 'RESERVATION ✓',
+    tagColor: 'gold',
+    timeSection: 'EVENING',
+    details: [
+      { icon: '🍽️', text: 'Dinner reservation at 8:15 PM. Smart casual.' },
+    ],
+  },
+  {
     id: 'fri-4',
     day: 'FRI',
     time: '10 PM',
@@ -171,6 +201,21 @@ export const SCHEDULE: ScheduleEvent[] = [
   },
 
   // --- SATURDAY Apr 18 ---
+  {
+    id: 'sat-0',
+    day: 'SAT',
+    time: '9 AM – 2 PM',
+    timeISO: '2026-04-18T09:00:00-07:00',
+    name: 'Hoover Dam Tour',
+    venue: 'Hoover Dam · ~45 min from Strip',
+    tag: 'confirmed',
+    tagLabel: 'DAY TRIP',
+    tagColor: 'amber',
+    timeSection: 'MORNING',
+    details: [
+      { icon: '🏜️', text: 'Depart by 9 AM. ~45 min drive. Back by 2 PM for pool time.' },
+    ],
+  },
   {
     id: 'sat-1',
     day: 'SAT',
