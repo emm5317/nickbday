@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 import { GoldButton } from '@/components/ui/GoldButton';
 import { useAppStore } from '@/store/useAppStore';
-import { TRIVIA_QUESTIONS } from '@/data/trivia';
+import { TRIVIA_QUESTIONS, OPEN_ENDED_QUESTIONS } from '@/data/trivia';
 import { PLAYERS } from '@/constants/players';
 
 export default function TriviaLobbyScreen() {
@@ -12,8 +12,16 @@ export default function TriviaLobbyScreen() {
   const currentPlayer = useAppStore((s) => s.currentPlayer);
   const triviaScores = useAppStore((s) => s.triviaScores);
 
+  const openEndedAnswers = useAppStore((s) => s.openEndedAnswers);
+
   const playerScore = currentPlayer ? triviaScores[currentPlayer] : undefined;
   const totalQuestions = TRIVIA_QUESTIONS.length;
+
+  const openEndedCount = currentPlayer
+    ? OPEN_ENDED_QUESTIONS.filter(
+        (q) => openEndedAnswers[q.id]?.[currentPlayer]
+      ).length
+    : 0;
 
   const rankedScores = Object.entries(triviaScores)
     .sort(([, a], [, b]) => b - a)
@@ -21,7 +29,7 @@ export default function TriviaLobbyScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.suit}>{'\u2660'}</Text>
         <Text style={styles.title}>Nick Trivia</Text>
         <Text style={styles.subtitle}>
@@ -67,7 +75,35 @@ export default function TriviaLobbyScreen() {
           onPress={() => router.push('/(tabs)/trivia/game' as any)}
           style={styles.startButton}
         />
-      </View>
+
+        <View style={styles.openEndedSection}>
+          <Text style={styles.openEndedLabel}>OPEN-ENDED QUESTIONS</Text>
+          <Text style={styles.openEndedDesc}>
+            {OPEN_ENDED_QUESTIONS.length} questions — write your answers and
+            we'll review them together
+          </Text>
+          {openEndedCount > 0 && (
+            <Text style={styles.openEndedProgress}>
+              {openEndedCount}/{OPEN_ENDED_QUESTIONS.length} answered
+            </Text>
+          )}
+        </View>
+
+        <GoldButton
+          label={openEndedCount > 0 ? 'CONTINUE OPEN-ENDED' : 'START OPEN-ENDED'}
+          onPress={() => router.push('/(tabs)/trivia/open-ended' as any)}
+          style={styles.startButton}
+        />
+
+        {openEndedCount > 0 && (
+          <Text
+            style={styles.viewAnswersLink}
+            onPress={() => router.push('/(tabs)/trivia/answers' as any)}
+          >
+            View everyone's answers
+          </Text>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -78,10 +114,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bgDeep,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.xl,
+    paddingBottom: Spacing.xxl * 2,
   },
   suit: {
     fontSize: 40,
@@ -173,5 +210,41 @@ const styles = StyleSheet.create({
   },
   startButton: {
     width: '100%',
+  },
+  openEndedSection: {
+    backgroundColor: Colors.bgCard,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radii.lg,
+    padding: Spacing.lg,
+    width: '100%',
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  openEndedLabel: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 10,
+    letterSpacing: 2,
+    color: Colors.gold,
+    marginBottom: Spacing.sm,
+  },
+  openEndedDesc: {
+    fontFamily: Fonts.body,
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  openEndedProgress: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
+    color: Colors.neonCyan,
+    marginTop: Spacing.sm,
+  },
+  viewAnswersLink: {
+    fontFamily: Fonts.bodyMedium,
+    fontSize: 13,
+    color: Colors.goldLight,
+    marginTop: Spacing.md,
+    textDecorationLine: 'underline',
   },
 });

@@ -93,6 +93,17 @@ export function writeEasterEgg(eggId: string, playerName: string) {
   });
 }
 
+export function writeOpenEndedAnswer(
+  questionId: string,
+  playerName: string,
+  answer: string
+) {
+  return set(
+    ref(db, `nick30/trivia/openEnded/${questionId}/${playerName}`),
+    answer
+  );
+}
+
 // --- Realtime Database listeners ---
 
 export interface PlayerLocation {
@@ -103,6 +114,7 @@ export interface PlayerLocation {
 
 export interface FirebaseState {
   triviaScores: Record<string, number>;
+  openEndedAnswers: Record<string, Record<string, string>>; // questionId → playerName → answer
   challengesCompletedBy: Record<string, string[]>;
   memoryPhotos: Array<{ uri: string; addedBy: string; timestamp: number }>;
   unlockedEasterEggs: string[];
@@ -118,6 +130,9 @@ export function subscribeToState(
     const data = snapshot.val() || {};
 
     const triviaScores: Record<string, number> = data.trivia?.scores || {};
+
+    const openEndedAnswers: Record<string, Record<string, string>> =
+      data.trivia?.openEnded || {};
 
     const challengesCompletedBy: Record<string, string[]> =
       data.challenges?.completedBy || {};
@@ -141,6 +156,7 @@ export function subscribeToState(
 
     onUpdate({
       triviaScores,
+      openEndedAnswers,
       challengesCompletedBy,
       memoryPhotos,
       unlockedEasterEggs,

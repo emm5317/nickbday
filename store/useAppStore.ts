@@ -5,6 +5,7 @@ import {
   writeChallenge,
   writeScore,
   writeEasterEgg,
+  writeOpenEndedAnswer,
   type FirebaseState,
   type PlayerLocation,
 } from '@/lib/firebaseSync';
@@ -19,6 +20,10 @@ interface AppState {
   triviaCompleted: boolean;
   recordTriviaScore: (player: string, score: number) => void;
   setTriviaCompleted: (completed: boolean) => void;
+
+  // Open-ended trivia (synced via Firebase)
+  openEndedAnswers: Record<string, Record<string, string>>; // questionId → playerName → answer
+  submitOpenEndedAnswer: (questionId: string, answer: string) => void;
 
   // Challenges (synced via Firebase — per-player completions)
   completedChallenges: string[]; // derived: all challenge IDs completed by anyone
@@ -60,6 +65,22 @@ export const useAppStore = create<AppState>()(
         writeScore(player, score);
       },
       setTriviaCompleted: (completed) => set({ triviaCompleted: completed }),
+
+      openEndedAnswers: {},
+      submitOpenEndedAnswer: (questionId, answer) => {
+        const player = get().currentPlayer;
+        if (!player) return;
+        set((s) => ({
+          openEndedAnswers: {
+            ...s.openEndedAnswers,
+            [questionId]: {
+              ...s.openEndedAnswers[questionId],
+              [player]: answer,
+            },
+          },
+        }));
+        writeOpenEndedAnswer(questionId, player, answer);
+      },
 
       completedChallenges: ['c12'],
       challengesCompletedBy: {},
@@ -111,6 +132,7 @@ export const useAppStore = create<AppState>()(
 
         set({
           triviaScores: data.triviaScores,
+          openEndedAnswers: data.openEndedAnswers,
           triviaCompleted: Object.keys(data.triviaScores).length > 0,
           challengesCompletedBy: data.challengesCompletedBy,
           completedChallenges: allCompletedIds,
