@@ -12,6 +12,12 @@
       "resizeMode": "contain",
       "backgroundColor": "#06060F"
     },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/YOUR_PROJECT_ID"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.emm5317.nicks30"
@@ -31,6 +37,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-updates",
       [
         "expo-image-picker",
         {
